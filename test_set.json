@@ -1,0 +1,301 @@
+[
+  {
+    "query": "吸奶器可以在充电的时候用吗？",
+    "expected_keywords": [
+      "充电",
+      "禁止",
+      "边充边用",
+      "电气安全"
+    ],
+    "expected_section": "安全说明",
+    "category": "safety",
+    "difficulty": "easy"
+  },
+  {
+    "query": "孕期可以用这个吸奶器吗？",
+    "expected_keywords": [
+      "孕期",
+      "哺乳期",
+      "宫缩",
+      "提前临产"
+    ],
+    "expected_section": "安全说明",
+    "category": "safety",
+    "difficulty": "easy"
+  },
+  {
+    "query": "使用时感到疼痛正常吗？",
+    "expected_keywords": [
+      "疼痛",
+      "立即停止",
+      "乳头",
+      "损伤"
+    ],
+    "expected_section": "安全说明",
+    "category": "safety",
+    "difficulty": "normal"
+  },
+  {
+    "query": "吸奶器可以给别人用吗？",
+    "expected_keywords": [
+      "单人专用",
+      "个人卫生",
+      "交叉污染",
+      "共用"
+    ],
+    "expected_section": "安全说明",
+    "category": "safety",
+    "difficulty": "easy"
+  },
+  {
+    "query": "睡觉的时候可以戴着吸奶器吗？",
+    "expected_keywords": [
+      "睡眠",
+      "禁止",
+      "困倦",
+      "无人注意"
+    ],
+    "expected_section": "安全说明",
+    "category": "safety",
+    "difficulty": "normal"
+  },
+  {
+    "query": "吸奶器怎么组装？",
+    "expected_keywords": [
+      "集乳杯",
+      "鸭嘴阀",
+      "硅胶隔膜",
+      "卡位",
+      "咔嗒"
+    ],
+    "expected_section": "组装",
+    "category": "operation",
+    "difficulty": "normal"
+  },
+  {
+    "query": "怎么开始吸奶？",
+    "expected_keywords": [
+      "电源键",
+      "刺激模式",
+      "吸乳模式",
+      "对准",
+      "喇叭罩"
+    ],
+    "expected_section": "吸取母乳",
+    "category": "operation",
+    "difficulty": "normal"
+  },
+  {
+    "query": "吸奶器的按钮怎么用？",
+    "expected_keywords": [
+      "电源键",
+      "切换键",
+      "加档",
+      "减档",
+      "长按",
+      "短按"
+    ],
+    "expected_section": "产品说明",
+    "category": "operation",
+    "difficulty": "easy"
+  },
+  {
+    "query": "吸奶器开不了机怎么办？",
+    "expected_keywords": [
+      "电池耗尽",
+      "充电",
+      "长按",
+      "电源键",
+      "1.5秒"
+    ],
+    "expected_section": "故障排除",
+    "category": "troubleshoot",
+    "difficulty": "normal"
+  },
+  {
+    "query": "吸奶器没有吸力了是什么原因？",
+    "expected_keywords": [
+      "组装",
+      "隔膜",
+      "鸭嘴阀",
+      "密封"
+    ],
+    "expected_section": "故障排除",
+    "category": "troubleshoot",
+    "difficulty": "normal"
+  },
+  {
+    "query": "吸力太大了很痛怎么办？",
+    "expected_keywords": [
+      "档位",
+      "调低",
+      "尺寸",
+      "硅胶塞"
+    ],
+    "expected_section": "故障排除",
+    "category": "troubleshoot",
+    "difficulty": "normal"
+  },
+  {
+    "query": "乳汁倒流进主机了怎么办？",
+    "expected_keywords": [
+      "隔膜",
+      "破损",
+      "移位",
+      "停止使用",
+      "售后"
+    ],
+    "expected_section": "故障排除",
+    "category": "troubleshoot",
+    "difficulty": "hard"
+  },
+  {
+    "query": "电池容量是多少？",
+    "expected_keywords": [
+      "1400mAh",
+      "锂离子",
+      "3.7V"
+    ],
+    "expected_section": "技术规格",
+    "category": "specs",
+    "difficulty": "easy"
+  },
+  {
+    "query": "充满电要多久？",
+    "expected_keywords": [
+      "2.5小时",
+      "充电"
+    ],
+    "expected_section": "技术规格",
+    "category": "specs",
+    "difficulty": "easy"
+  },
+  {
+    "query": "噪音大吗？",
+    "expected_keywords": [
+      "50dB",
+      "噪音"
+    ],
+    "expected_section": "技术规格",
+    "category": "specs",
+    "difficulty": "easy"
+  },
+  {
+    "query": "防水等级是多少？",
+    "expected_keywords": [
+      "IP22",
+      "防护等级",
+      "不可水洗"
+    ],
+    "expected_section": "技术规格",
+    "category": "specs",
+    "difficulty": "easy"
+  },
+  {
+    "query": "喇叭罩尺寸怎么选？",
+    "expected_keywords": [
+      "乳头",
+      "直径",
+      "18mm",
+      "20mm",
+      "22mm",
+      "1~3mm"
+    ],
+    "expected_section": "选择正确的吸乳护罩尺寸",
+    "category": "sizing",
+    "difficulty": "normal"
+  },
+  {
+    "query": "硅胶塞太大了会怎样？",
+    "expected_keywords": [
+      "乳晕",
+      "被吸入",
+      "乳腺管",
+      "出奶少"
+    ],
+    "expected_section": "选择正确的吸乳护罩尺寸",
+    "category": "sizing",
+    "difficulty": "normal"
+  },
+  {
+    "query": "吸奶器怎么清洗？",
+    "expected_keywords": [
+      "触奶部件",
+      "温水",
+      "母婴清洗剂",
+      "煮沸消毒",
+      "晾干"
+    ],
+    "expected_section": "清洁与消杀",
+    "category": "cleaning",
+    "difficulty": "normal"
+  },
+  {
+    "query": "主机可以水洗吗？",
+    "expected_keywords": [
+      "不可水洗",
+      "IP22",
+      "湿布",
+      "擦拭"
+    ],
+    "expected_section": "清洁与消杀",
+    "category": "cleaning",
+    "difficulty": "easy"
+  },
+  {
+    "query": "母乳可以保存多久？",
+    "expected_keywords": [
+      "常温",
+      "4小时",
+      "冷藏",
+      "3-5天",
+      "冷冻",
+      "6个月"
+    ],
+    "expected_section": "倒奶与存奶",
+    "category": "storage",
+    "difficulty": "normal"
+  },
+  {
+    "query": "App 怎么连接吸奶器？",
+    "expected_keywords": [
+      "蓝牙",
+      "长按",
+      "切换键",
+      "配对",
+      "SporraMom"
+    ],
+    "expected_section": "App 使用指南",
+    "category": "app",
+    "difficulty": "normal"
+  },
+  {
+    "query": "App 连接失败怎么办？",
+    "expected_keywords": [
+      "蓝牙",
+      "未开",
+      "定位权限"
+    ],
+    "expected_section": "故障排除",
+    "category": "app",
+    "difficulty": "normal"
+  },
+  {
+    "query": "这个吸奶器和美德乐比哪个好？",
+    "expected_keywords": [],
+    "expected_section": "",
+    "category": "out_of_scope",
+    "difficulty": "hard"
+  },
+  {
+    "query": "吸奶器坏了可以自己修吗？",
+    "expected_keywords": [
+      "售后",
+      "保修",
+      "联系"
+    ],
+    "expected_section": "保修服务",
+    "category": "edge",
+    "difficulty": "hard"
+  }
+]

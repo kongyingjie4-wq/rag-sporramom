@@ -235,13 +235,17 @@ class HybridRetriever:
         # Step 3: RRF 融合
         rrf_results = self._rrf_fusion(bm25_results, vector_results)
 
-        # Step 4: Rerank
-        rerank_candidates = rrf_results[:bm25_top_k + vector_top_k]  # 取融合后的前 N 候选
-        reranked = self._rerank(query, rerank_candidates, rerank_top_n)
+        # Step 4: Rerank (可选)
+        if config.RERANK_ENABLED:
+            rerank_candidates = rrf_results[:10]
+            final_results = self._rerank(query, rerank_candidates, rerank_top_n)
+        else:
+            # 不用 Rerank，直接用 RRF 分数
+            final_results = [(idx, score) for idx, score in rrf_results[:rerank_top_n]]
 
         # 组装结果
         results = []
-        for idx, rerank_score in reranked:
+        for idx, score in final_results:
             chunk = self.chunks[idx]
             rrf_score = next((s for i, s in rrf_results if i == idx), 0.0)
             results.append(RetrievalResult(
@@ -249,7 +253,7 @@ class HybridRetriever:
                 bm25_rank=bm25_rank_map.get(idx, -1),
                 vector_rank=vector_rank_map.get(idx, -1),
                 rrf_score=rrf_score,
-                rerank_score=rerank_score,
+                rerank_score=score,
             ))
 
         return results

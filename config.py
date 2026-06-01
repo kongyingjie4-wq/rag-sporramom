@@ -26,11 +26,12 @@ RERANKER_MODEL = "BAAI/bge-reranker-base"
 # ============================================================
 # 检索参数 (A/B 实验核心变量)
 # ============================================================
-BM25_TOP_K = 10           # BM25 初筛候选数
-VECTOR_TOP_K = 10         # 向量检索初筛候选数
+BM25_TOP_K = 8            # BM25 初筛候选数
+VECTOR_TOP_K = 8          # 向量检索初筛候选数
 RRF_K = 60                # RRF 融合参数 (论文推荐 60)
-RERANK_TOP_N = 6          # Rerank 后保留的最终候选数
-RELEVANCE_THRESHOLD = 0.05 # Rerank 相关性阈值, 低于此触发降级策略 (bge-reranker 对口语化问题分数偏低)
+RERANK_ENABLED = True     # 是否启用 Reranker (True=质量优先 92%HR@3/19s, False=速度优先 76%HR@3/11s)
+RERANK_TOP_N = 5          # Rerank 后保留的最终候选数
+RELEVANCE_THRESHOLD = 0.05 # Rerank 相关性阈值, 低于此触发降级策略
 
 # ============================================================
 # 分块参数

@@ -86,22 +86,13 @@ ANSWER_PROMPT = """基于以下产品文档内容，回答用户问题。
 
 
 def _judge_intent(query: str) -> str:
-    """判断用户意图"""
-    llm = get_llm_client()
-    try:
-        resp = llm.chat(
-            INTENT_PROMPT.format(query=query),
-            temperature=0.1,
-            max_tokens=20,
-        )
-        intent = resp.content.strip().lower()
-        valid_intents = ["product_qa", "safety_concern", "chitchat", "out_of_scope"]
-        for v in valid_intents:
-            if v in intent:
-                return v
-        return "product_qa"  # 默认当产品问题处理
-    except Exception:
-        return "product_qa"  # 出错时默认处理
+    """判断用户意图（规则，不调 LLM）"""
+    chitchat_keywords = ["你好", "谢谢", "拜拜", "再见", "嗨", "hi", "hello", "聊聊天", "你是谁"]
+    q = query.strip().lower()
+    for kw in chitchat_keywords:
+        if kw in q:
+            return "chitchat"
+    return "product_qa"
 
 
 def _check_relevance(results: List[RetrievalResult], threshold: float) -> bool:

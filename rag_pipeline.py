@@ -115,7 +115,7 @@ def _format_context(results: List[RetrievalResult]) -> str:
     """将检索结果格式化为 LLM 上下文"""
     parts = []
     for i, r in enumerate(results, 1):
-        parts.append(f"[文档{i}] (来源: {r.chunk.section_path})\n{r.chunk.content}")
+        parts.append(f"[文档{i}] (来源: {r.chunk.topic})\n{r.chunk.content}")
     return "\n\n".join(parts)
 
 
@@ -244,7 +244,7 @@ def run_rag(
     for r in results:
         retrieval_details.append({
             "chunk_id": r.chunk.chunk_id,
-            "section_path": r.chunk.section_path,
+            "topic": r.chunk.topic,
             "content_preview": r.chunk.content[:150],
             "bm25_rank": r.bm25_rank,
             "vector_rank": r.vector_rank,
@@ -269,7 +269,7 @@ def run_rag(
             for r in results:
                 retrieval_details.append({
                     "chunk_id": r.chunk.chunk_id,
-                    "section_path": r.chunk.section_path,
+                    "topic": r.chunk.topic,
                     "content_preview": r.chunk.content[:150],
                     "bm25_rank": r.bm25_rank,
                     "vector_rank": r.vector_rank,
@@ -320,7 +320,7 @@ def run_rag(
     sources = []
     for r in results:
         sources.append({
-            "section": r.chunk.section_path,
+            "section": r.chunk.topic,
             "content": r.chunk.content[:200],
             "rerank_score": round(r.rerank_score, 3),
         })

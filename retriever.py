@@ -282,5 +282,5 @@ if __name__ == "__main__":
         print(f"{'='*60}")
         results = retriever.retrieve(query)
         for i, r in enumerate(results):
-            print(f"  [{i+1}] Rerank={r.rerank_score:.3f} | BM25#{r.bm25_rank+1} Vec#{r.vector_rank+1} | {r.chunk.section_path}")
+            print(f"  [{i+1}] Rerank={r.rerank_score:.3f} | BM25#{r.bm25_rank+1} Vec#{r.vector_rank+1} | {r.chunk.topic}")
             print(f"      {r.chunk.content[:100]}...")

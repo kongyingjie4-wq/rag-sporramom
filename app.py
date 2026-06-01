@@ -135,7 +135,7 @@ def debug_full_pipeline(query: str):
     for rank, (idx, score) in enumerate(bm25_results[:8], 1):
         chunk = _retriever.chunks[idx]
         preview = chunk.content[:60].replace("|", "\\|").replace("\n", " ")
-        bm25_lines.append(f"| {rank} | {score:.2f} | {chunk.section_path} | {preview}... |\n")
+        bm25_lines.append(f"| {rank} | {score:.2f} | {chunk.topic} | {preview}... |\n")
 
     result["step2_bm25"] = "".join(bm25_lines)
 
@@ -162,7 +162,7 @@ def debug_full_pipeline(query: str):
     for rank, (idx, score) in enumerate(vector_results[:8], 1):
         chunk = _retriever.chunks[idx]
         preview = chunk.content[:60].replace("|", "\\|").replace("\n", " ")
-        vector_lines.append(f"| {rank} | {score:.4f} | {chunk.section_path} | {preview}... |\n")
+        vector_lines.append(f"| {rank} | {score:.4f} | {chunk.topic} | {preview}... |\n")
 
     result["step3_vector"] = "".join(vector_lines)
 
@@ -189,7 +189,7 @@ def debug_full_pipeline(query: str):
         vec_r = vec_rank_map.get(idx, -1)
         bm25_str = f"#{bm25_r+1}" if bm25_r >= 0 else "未命中"
         vec_str = f"#{vec_r+1}" if vec_r >= 0 else "未命中"
-        rrf_lines.append(f"| {rank} | {score:.4f} | {bm25_str} | {vec_str} | {chunk.section_path} |\n")
+        rrf_lines.append(f"| {rank} | {score:.4f} | {bm25_str} | {vec_str} | {chunk.topic} |\n")
 
     result["step4_rrf"] = "".join(rrf_lines)
 
@@ -212,7 +212,7 @@ def debug_full_pipeline(query: str):
     for rank, (idx, score) in enumerate(reranked, 1):
         chunk = _retriever.chunks[idx]
         preview = chunk.content[:60].replace("|", "\\|").replace("\n", " ")
-        rerank_lines.append(f"| {rank} | **{score:.4f}** | {chunk.section_path} | {preview}... |\n")
+        rerank_lines.append(f"| {rank} | **{score:.4f}** | {chunk.topic} | {preview}... |\n")
 
     result["step5_rerank"] = "".join(rerank_lines)
 
@@ -341,7 +341,7 @@ def view_vector_db():
 
     for i, chunk in enumerate(_chunks):
         emb = _retriever.vector_index.embeddings[i]
-        lines.append(f"## Chunk {i+1}: {chunk.section_path}\n\n")
+        lines.append(f"## Chunk {i+1}: {chunk.topic}\n\n")
         lines.append(f"**Chunk ID**: `{chunk.chunk_id}`\n\n")
         lines.append(f"**字符数**: {chunk.char_count}\n\n")
         lines.append(f"**向量 (前10维)**: `{np.array2string(emb[:10], precision=4, separator=', ')}`\n\n")
@@ -384,7 +384,7 @@ def search_vector_db(query: str):
     for rank, (idx, sim, chunk) in enumerate(all_sims, 1):
         preview = chunk.content[:80].replace("|", "\\|").replace("\n", " ")
         highlight = "**" if rank <= 3 else ""
-        lines.append(f"| {highlight}{rank}{highlight} | {highlight}{sim:.4f}{highlight} | {chunk.section_path} | {preview}... |\n")
+        lines.append(f"| {highlight}{rank}{highlight} | {highlight}{sim:.4f}{highlight} | {chunk.topic} | {preview}... |\n")
 
     lines.append(f"\n**所有 {len(all_sims)} 个 chunk 的相似度分布**:\n\n")
     sims_values = [s[1] for s in all_sims]

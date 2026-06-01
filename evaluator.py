@@ -52,7 +52,7 @@ class TestCase:
     """单个测试用例"""
     query: str                           # 用户问题
     expected_keywords: List[str]         # 期望答案包含的关键词
-    expected_section: str                # 期望命中的章节 (模糊匹配)
+    expected_topic: str                  # 期望命中的 chunk topic (模糊匹配)
     category: str = "general"            # 测试类别
     difficulty: str = "normal"           # 难度: easy/normal/hard
 
@@ -75,35 +75,35 @@ def generate_test_set() -> List[TestCase]:
         TestCase(
             query="吸奶器可以在充电的时候用吗？",
             expected_keywords=["充电", "禁止", "边充边用", "电气安全"],
-            expected_section="安全说明",
+            expected_topic="安全警告-充电时禁止使用",
             category="safety",
             difficulty="easy",
         ),
         TestCase(
             query="孕期可以用这个吸奶器吗？",
             expected_keywords=["孕期", "哺乳期", "宫缩", "提前临产"],
-            expected_section="安全说明",
+            expected_topic="安全警告-仅限哺乳期使用",
             category="safety",
             difficulty="easy",
         ),
         TestCase(
             query="使用时感到疼痛正常吗？",
             expected_keywords=["疼痛", "立即停止", "乳头", "损伤"],
-            expected_section="安全说明",
+            expected_topic="安全警告-疼痛立即停止",
             category="safety",
             difficulty="normal",
         ),
         TestCase(
             query="吸奶器可以给别人用吗？",
             expected_keywords=["单人专用", "个人卫生", "交叉污染", "共用"],
-            expected_section="安全说明",
+            expected_topic="安全警告-单人专用",
             category="safety",
             difficulty="easy",
         ),
         TestCase(
             query="睡觉的时候可以戴着吸奶器吗？",
             expected_keywords=["睡眠", "禁止", "困倦", "无人注意"],
-            expected_section="安全说明",
+            expected_topic="安全警告-禁止睡眠时使用",
             category="safety",
             difficulty="normal",
         ),
@@ -112,21 +112,21 @@ def generate_test_set() -> List[TestCase]:
         TestCase(
             query="吸奶器怎么组装？",
             expected_keywords=["集乳杯", "鸭嘴阀", "硅胶隔膜", "卡位", "咔嗒"],
-            expected_section="组装",
+            expected_topic="组装吸奶器",
             category="operation",
             difficulty="normal",
         ),
         TestCase(
             query="怎么开始吸奶？",
             expected_keywords=["电源键", "刺激模式", "吸乳模式", "对准", "喇叭罩"],
-            expected_section="吸取母乳",
+            expected_topic="吸取母乳操作",
             category="operation",
             difficulty="normal",
         ),
         TestCase(
             query="吸奶器的按钮怎么用？",
             expected_keywords=["电源键", "切换键", "加档", "减档", "长按", "短按"],
-            expected_section="产品说明",
+            expected_topic="电源键与切换键操作",
             category="operation",
             difficulty="easy",
         ),
@@ -135,28 +135,28 @@ def generate_test_set() -> List[TestCase]:
         TestCase(
             query="吸奶器开不了机怎么办？",
             expected_keywords=["电池耗尽", "充电", "长按", "电源键", "1.5秒"],
-            expected_section="故障排除",
+            expected_topic="故障排除-充电与开关机问题",
             category="troubleshoot",
             difficulty="normal",
         ),
         TestCase(
             query="吸奶器没有吸力了是什么原因？",
             expected_keywords=["组装", "隔膜", "鸭嘴阀", "密封"],
-            expected_section="故障排除",
+            expected_topic="故障排除-吸力异常问题",
             category="troubleshoot",
             difficulty="normal",
         ),
         TestCase(
             query="吸力太大了很痛怎么办？",
             expected_keywords=["档位", "调低", "尺寸", "硅胶塞"],
-            expected_section="故障排除",
+            expected_topic="故障排除-吸力异常问题",
             category="troubleshoot",
             difficulty="normal",
         ),
         TestCase(
             query="乳汁倒流进主机了怎么办？",
             expected_keywords=["隔膜", "破损", "移位", "停止使用", "售后"],
-            expected_section="故障排除",
+            expected_topic="故障排除-漏液与App问题",
             category="troubleshoot",
             difficulty="hard",
         ),
@@ -165,28 +165,28 @@ def generate_test_set() -> List[TestCase]:
         TestCase(
             query="电池容量是多少？",
             expected_keywords=["1400mAh", "锂离子", "3.7V"],
-            expected_section="技术规格",
+            expected_topic="技术规格",
             category="specs",
             difficulty="easy",
         ),
         TestCase(
             query="充满电要多久？",
             expected_keywords=["2.5小时", "充电"],
-            expected_section="技术规格",
+            expected_topic="充电时间与续航",
             category="specs",
             difficulty="easy",
         ),
         TestCase(
             query="噪音大吗？",
             expected_keywords=["50dB", "噪音"],
-            expected_section="技术规格",
+            expected_topic="技术规格",
             category="specs",
             difficulty="easy",
         ),
         TestCase(
             query="防水等级是多少？",
             expected_keywords=["IP22", "防护等级", "不可水洗"],
-            expected_section="技术规格",
+            expected_topic="技术规格",
             category="specs",
             difficulty="easy",
         ),
@@ -195,14 +195,14 @@ def generate_test_set() -> List[TestCase]:
         TestCase(
             query="喇叭罩尺寸怎么选？",
             expected_keywords=["乳头", "直径", "18mm", "20mm", "22mm", "1~3mm"],
-            expected_section="选择正确的吸乳护罩尺寸",
+            expected_topic="喇叭罩尺寸选择与不当后果",
             category="sizing",
             difficulty="normal",
         ),
         TestCase(
             query="硅胶塞太大了会怎样？",
             expected_keywords=["乳晕", "被吸入", "乳腺管", "出奶少"],
-            expected_section="选择正确的吸乳护罩尺寸",
+            expected_topic="喇叭罩尺寸选择与不当后果",
             category="sizing",
             difficulty="normal",
         ),
@@ -211,14 +211,14 @@ def generate_test_set() -> List[TestCase]:
         TestCase(
             query="吸奶器怎么清洗？",
             expected_keywords=["触奶部件", "温水", "母婴清洗剂", "煮沸消毒", "晾干"],
-            expected_section="清洁与消杀",
+            expected_topic="清洁与消毒",
             category="cleaning",
             difficulty="normal",
         ),
         TestCase(
             query="主机可以水洗吗？",
             expected_keywords=["不可水洗", "IP22", "湿布", "擦拭"],
-            expected_section="清洁与消杀",
+            expected_topic="清洁与消毒",
             category="cleaning",
             difficulty="easy",
         ),
@@ -227,7 +227,7 @@ def generate_test_set() -> List[TestCase]:
         TestCase(
             query="母乳可以保存多久？",
             expected_keywords=["常温", "4小时", "冷藏", "3-5天", "冷冻", "6个月"],
-            expected_section="倒奶与存奶",
+            expected_topic="倒奶与存奶",
             category="storage",
             difficulty="normal",
         ),
@@ -236,14 +236,14 @@ def generate_test_set() -> List[TestCase]:
         TestCase(
             query="App 怎么连接吸奶器？",
             expected_keywords=["蓝牙", "长按", "切换键", "配对", "SporraMom"],
-            expected_section="App 使用指南",
+            expected_topic="App使用指南",
             category="app",
             difficulty="normal",
         ),
         TestCase(
             query="App 连接失败怎么办？",
             expected_keywords=["蓝牙", "未开", "定位权限"],
-            expected_section="故障排除",
+            expected_topic="故障排除-漏液与App问题",
             category="app",
             difficulty="normal",
         ),
@@ -252,14 +252,14 @@ def generate_test_set() -> List[TestCase]:
         TestCase(
             query="这个吸奶器和美德乐比哪个好？",
             expected_keywords=[],  # 不应编造对比信息
-            expected_section="",
+            expected_topic="",
             category="out_of_scope",
             difficulty="hard",
         ),
         TestCase(
             query="吸奶器坏了可以自己修吗？",
             expected_keywords=["售后", "保修", "联系"],
-            expected_section="保修服务",
+            expected_topic="保修服务",
             category="edge",
             difficulty="hard",
         ),
@@ -272,17 +272,17 @@ def generate_test_set() -> List[TestCase]:
 # 评测指标计算
 # ============================================================
 
-def compute_hit_rate(retrieved_sections: List[str], expected_section: str, k: int) -> float:
+def compute_hit_rate(retrieved_sections: List[str], expected_topic: str, k: int) -> float:
     """
     Hit Rate@K: top-K 结果中是否包含正确文档。
 
-    计算方式: 如果 expected_section 的关键词出现在 top-K 任一结果中，得 1 分。
+    计算方式: 如果 expected_topic 的关键词出现在 top-K 任一结果中，得 1 分。
     """
-    if not expected_section:
+    if not expected_topic:
         return 1.0  # 没有期望章节时默认通过
 
     top_k = retrieved_sections[:k]
-    expected_lower = expected_section.lower()
+    expected_lower = expected_topic.lower()
 
     for section in top_k:
         # 模糊匹配: 期望关键词出现在实际章节路径中
@@ -293,7 +293,7 @@ def compute_hit_rate(retrieved_sections: List[str], expected_section: str, k: in
     return 0.0
 
 
-def compute_mrr(retrieved_sections: List[str], expected_section: str) -> float:
+def compute_mrr(retrieved_sections: List[str], expected_topic: str) -> float:
     """
     MRR (Mean Reciprocal Rank): 正确文档排名的倒数。
 
@@ -302,10 +302,10 @@ def compute_mrr(retrieved_sections: List[str], expected_section: str) -> float:
     如果正确文档排在第 3 位 → MRR = 0.33
     如果未命中 → MRR = 0.0
     """
-    if not expected_section:
+    if not expected_topic:
         return 1.0
 
-    expected_lower = expected_section.lower()
+    expected_lower = expected_topic.lower()
     for rank, section in enumerate(retrieved_sections, start=1):
         if expected_lower in section.lower() or any(
             kw in section.lower() for kw in expected_lower.split(" > ")
@@ -376,7 +376,7 @@ class EvalResult:
     query: str
     category: str
     difficulty: str
-    expected_section: str
+    expected_topic: str
     expected_keywords: List[str]
     # 检索指标
     hit_rate_at_1: float = 0.0
@@ -452,20 +452,20 @@ def run_evaluation(
         response_time_ms = int((time.time() - start_time) * 1000)
 
         # 提取检索到的章节路径
-        retrieved_sections = [r.get("section_path", "") for r in rag_resp.retrieval_results]
+        retrieved_sections = [r.get("topic", "") for r in rag_resp.retrieval_results]
 
         # 计算指标
         result = EvalResult(
             query=tc.query,
             category=tc.category,
             difficulty=tc.difficulty,
-            expected_section=tc.expected_section,
+            expected_topic=tc.expected_topic,
             expected_keywords=tc.expected_keywords,
-            hit_rate_at_1=compute_hit_rate(retrieved_sections, tc.expected_section, 1),
-            hit_rate_at_3=compute_hit_rate(retrieved_sections, tc.expected_section, 3),
-            hit_rate_at_5=compute_hit_rate(retrieved_sections, tc.expected_section, 5),
-            hit_rate_at_10=compute_hit_rate(retrieved_sections, tc.expected_section, 10),
-            mrr=compute_mrr(retrieved_sections, tc.expected_section),
+            hit_rate_at_1=compute_hit_rate(retrieved_sections, tc.expected_topic, 1),
+            hit_rate_at_3=compute_hit_rate(retrieved_sections, tc.expected_topic, 3),
+            hit_rate_at_5=compute_hit_rate(retrieved_sections, tc.expected_topic, 5),
+            hit_rate_at_10=compute_hit_rate(retrieved_sections, tc.expected_topic, 10),
+            mrr=compute_mrr(retrieved_sections, tc.expected_topic),
             keyword_coverage=compute_keyword_coverage(rag_resp.answer, tc.expected_keywords),
             relevance_score=0.0,
             response_time_ms=response_time_ms,
@@ -563,7 +563,7 @@ def format_eval_report(report: EvalReport) -> str:
     if failures:
         for r in failures[:5]:
             lines.append(f"  Q: {r.query}")
-            lines.append(f"    期望章节: {r.expected_section}")
+            lines.append(f"    期望章节: {r.expected_topic}")
             lines.append(f"    实际命中: {r.retrieved_sections[:3]}")
             lines.append(f"    HR@3={r.hit_rate_at_3:.0f} MRR={r.mrr:.2f} 覆盖率={r.keyword_coverage:.2f}")
             lines.append("")

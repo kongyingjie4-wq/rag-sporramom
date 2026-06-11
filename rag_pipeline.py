@@ -231,8 +231,8 @@ def run_rag(
     vector_results = retriever.vector_index.search(query, vector_top_k_val)
 
     # 检查 BM25 和向量是否都找不到相关内容
-    bm25_has_results = len(bm25_results) > 0 and bm25_results[0][1] > 0
-    vector_has_results = len(vector_results) > 0 and vector_results[0][1] > 0.3
+    bm25_has_results = len(bm25_results) > 0 and bm25_results[0][1] > 4
+    vector_has_results = len(vector_results) > 0 and vector_results[0][1] > 0.5
 
     if not bm25_has_results and not vector_has_results:
         # BM25 和向量都没找到相关内容 → 和产品无关，跳过 Rerank

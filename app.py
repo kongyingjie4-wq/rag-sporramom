@@ -148,8 +148,8 @@ def debug_full_pipeline(query: str):
     result["step3_vector"] = "".join(vector_lines)
 
     # ========== Step 4: 预筛检查 ==========
-    bm25_has = len(bm25_results) > 0 and bm25_results[0][1] > 0
-    vector_has = len(vector_results) > 0 and vector_results[0][1] > 0.3
+    bm25_has = len(bm25_results) > 0 and bm25_results[0][1] > 4
+    vector_has = len(vector_results) > 0 and vector_results[0][1] > 0.5
 
     if not bm25_has and not vector_has:
         result["step4_rrf"] = "## Step 4: RRF 融合\n\n⏭️ 跳过 (预筛判定: 和产品无关)"

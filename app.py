@@ -84,34 +84,22 @@ def debug_full_pipeline(query: str):
         f"**用户问题**: {query}\n\n"
         f"**识别意图**: `{intent}`\n\n"
         f"**耗时**: {(t1-t0)*1000:.0f}ms\n\n"
-        f"---\n\n"
-        f"意图类别说明:\n"
-        f"- `product_qa`: 产品相关问题 → 走 RAG 检索\n"
-        f"- `safety_concern`: 安全担忧 → 走 RAG 检索 (优先安全文档)\n"
-        f"- `chitchat`: 闲聊 → 直接回复\n"
-        f"- `out_of_scope`: 超出范围 → 引导联系客服\n"
     )
 
-    if intent in ("chitchat", "out_of_scope"):
-        result["step2_bm25"] = "## Step 2: BM25 检索\n\n⏭️ 跳过 (意图非产品问题)"
+    if intent == "chitchat":
+        llm = get_llm_client()
+        t2 = time.time()
+        resp = llm.chat(query, system_prompt="你是 SporraMom W3 吸奶器的智能客服助手。友好地回应用户。", temperature=0.5)
+        t3 = time.time()
+        result["step2_bm25"] = "## Step 2: BM25 检索\n\n⏭️ 跳过 (闲聊)"
         result["step3_vector"] = "## Step 3: 向量检索\n\n⏭️ 跳过"
         result["step4_rrf"] = "## Step 4: RRF 融合\n\n⏭️ 跳过"
         result["step5_rerank"] = "## Step 5: Rerank 精排\n\n⏭️ 跳过"
-        result["step6_relevance"] = "## Step 6: 相关性检查\n\n⏭️ 跳过"
+        result["step6_relevance"] = "## Step 6: 预筛检查\n\n⏭️ 跳过"
         result["step7_prompt"] = "## Step 7: LLM Prompt\n\n⏭️ 跳过"
-        result["step8_answer"] = "## Step 8: 答案生成\n\n⏭️ 跳过"
+        result["step8_answer"] = f"## Step 8: 答案生成\n\n**耗时**: {(t3-t2)*1000:.0f}ms\n\n{resp.content}"
         result["step9_selfcheck"] = "## Step 9: 自检\n\n⏭️ 跳过"
-
-        if intent == "chitchat":
-            llm = get_llm_client()
-            resp = llm.chat(query, system_prompt="你是 SporraMom W3 吸奶器的智能客服助手。友好地回应用户。", temperature=0.5)
-            result["final_answer"] = f"## 最终回答\n\n{resp.content}"
-        else:
-            result["final_answer"] = (
-                "## 最终回答\n\n"
-                "抱歉，这个问题超出了 SporraMom W3 产品的服务范围。\n\n"
-                "建议联系售后: **support@sporramom.com**"
-            )
+        result["final_answer"] = f"## 最终回答\n\n⏱️ 总耗时: {((t3-t0)*1000):.0f}ms\n\n{resp.content}"
         return result
 
     # ========== Step 2: BM25 关键词检索 ==========
@@ -125,10 +113,6 @@ def debug_full_pipeline(query: str):
         "## Step 2: BM25 关键词检索\n\n",
         f"**分词结果**: `{' | '.join(tokens)}`\n\n",
         f"**耗时**: {(t1-t0)*1000:.0f}ms\n\n",
-        f"**原理**: 对每个 chunk 计算 BM25 分数 (基于词频和逆文档频率)\n\n",
-        "```\n",
-        "分数 = Σ IDF(token) × TF(token in chunk) × (k1+1) / (TF + k1×(1-b+b×dl/avgdl))\n",
-        "```\n\n",
         "| 排名 | BM25分数 | 章节路径 | 内容预览 |\n",
         "|------|---------|----------|----------|\n",
     ]
@@ -140,22 +124,19 @@ def debug_full_pipeline(query: str):
     result["step2_bm25"] = "".join(bm25_lines)
 
     # ========== Step 3: 向量语义检索 ==========
-    t0 = time.time()
+    t2 = time.time()
     vector_results = _retriever.vector_index.search(query, config.VECTOR_TOP_K)
-    t1 = time.time()
+    t3 = time.time()
 
-    # 获取 query embedding 用于展示
     query_emb = _retriever.vector_index.model.encode(
         [query], normalize_embeddings=True
     )[0]
 
     vector_lines = [
         "## Step 3: 向量语义检索\n\n",
-        f"**耗时**: {(t1-t0)*1000:.0f}ms\n\n",
+        f"**耗时**: {(t3-t2)*1000:.0f}ms\n\n",
         f"**Embedding 模型**: `{config.EMBEDDING_MODEL}`\n\n",
         f"**向量维度**: {query_emb.shape[0]}\n\n",
-        f"**Query 向量 (前20维)**: `{np.array2string(query_emb[:20], precision=4, separator=', ')}`\n\n",
-        f"**原理**: 将 query 和所有 chunk 编码为向量，计算余弦相似度\n\n",
         "| 排名 | 余弦相似度 | 章节路径 | 内容预览 |\n",
         "|------|-----------|----------|----------|\n",
     ]
@@ -166,20 +147,37 @@ def debug_full_pipeline(query: str):
 
     result["step3_vector"] = "".join(vector_lines)
 
-    # ========== Step 4: RRF 融合 ==========
-    t0 = time.time()
+    # ========== Step 4: 预筛检查 ==========
+    bm25_has = len(bm25_results) > 0 and bm25_results[0][1] > 0
+    vector_has = len(vector_results) > 0 and vector_results[0][1] > 0.3
+
+    if not bm25_has and not vector_has:
+        result["step4_rrf"] = "## Step 4: RRF 融合\n\n⏭️ 跳过 (预筛判定: 和产品无关)"
+        result["step5_rerank"] = "## Step 5: Rerank 精排\n\n⏭️ 跳过"
+        result["step6_relevance"] = "## Step 6: 预筛检查\n\n✅ BM25 和向量都未找到相关内容 → 跳过 Rerank，省 ~7.5 秒"
+        result["step7_prompt"] = "## Step 7: LLM Prompt\n\n⏭️ 跳过"
+        result["step8_answer"] = "## Step 8: 答案生成\n\n⏭️ 跳过"
+        result["step9_selfcheck"] = "## Step 9: 自检\n\n⏭️ 跳过"
+        total_ms = (time.time() - t0) * 1000
+        result["final_answer"] = (
+            f"## 最终回答\n\n"
+            f"⏱️ 总耗时: {total_ms:.0f}ms\n\n"
+            f"我是 SporraMom W3 吸奶器的智能客服助手，请问您有关于产品的问题吗？"
+        )
+        return result
+
+    # ========== Step 5: RRF 融合 ==========
+    t4 = time.time()
     rrf_results = _retriever._rrf_fusion(bm25_results, vector_results)
-    t1 = time.time()
+    t5 = time.time()
 
     bm25_rank_map = {idx: rank for rank, (idx, _) in enumerate(bm25_results)}
     vec_rank_map = {idx: rank for rank, (idx, _) in enumerate(vector_results)}
 
     rrf_lines = [
-        "## Step 4: RRF (Reciprocal Rank Fusion) 融合\n\n",
-        f"**耗时**: {(t1-t0)*1000:.0f}ms\n\n",
+        "## Step 4: RRF 融合\n\n",
+        f"**耗时**: {(t5-t4)*1000:.0f}ms\n\n",
         f"**RRF 参数 k**: {config.RRF_K}\n\n",
-        f"**公式**: `score(doc) = Σ 1/(k + rank_i)`\n\n",
-        f"**原理**: 不依赖分数绝对值，只看排名。BM25 和向量检索的分数量纲不同，RRF 用排名来融合，更鲁棒。\n\n",
         "| 排名 | RRF分数 | BM25排名 | 向量排名 | 章节路径 |\n",
         "|------|---------|----------|----------|----------|\n",
     ]
@@ -193,18 +191,16 @@ def debug_full_pipeline(query: str):
 
     result["step4_rrf"] = "".join(rrf_lines)
 
-    # ========== Step 5: Rerank 精排 ==========
-    t0 = time.time()
-    rerank_candidates = rrf_results[:config.BM25_TOP_K + config.VECTOR_TOP_K]
+    # ========== Step 6: Rerank 精排 ==========
+    t6 = time.time()
+    rerank_candidates = rrf_results[:10]
     reranked = _retriever._rerank(query, rerank_candidates, config.RERANK_TOP_N)
-    t1 = time.time()
+    t7 = time.time()
 
     rerank_lines = [
-        "## Step 5: Rerank 精排 (CrossEncoder)\n\n",
-        f"**耗时**: {(t1-t0)*1000:.0f}ms\n\n",
+        "## Step 5: Rerank 精排\n\n",
+        f"**耗时**: {(t7-t6)*1000:.0f}ms\n\n",
         f"**Reranker 模型**: `{config.RERANKER_MODEL}`\n\n",
-        f"**原理**: CrossEncoder 将 query 和 doc 拼接输入，交叉注意力打分。\n"
-        f"比 Embedding 的双塔模型更精准 (但更慢，所以只对 top-k 候选做)。\n\n",
         f"**候选数**: {len(rerank_candidates)} → 精排后保留: {len(reranked)}\n\n",
         "| 排名 | Rerank分数 | 章节路径 | 内容预览 |\n",
         "|------|-----------|----------|----------|\n",
@@ -216,40 +212,73 @@ def debug_full_pipeline(query: str):
 
     result["step5_rerank"] = "".join(rerank_lines)
 
-    # ========== Step 6: 相关性检查 ==========
+    # ========== Step 7: 相关性检查 ==========
     top_score = reranked[0][1] if reranked else 0
     passed = top_score >= config.RELEVANCE_THRESHOLD
 
     relevance_lines = [
-        "## Step 6: 相关性阈值检查\n\n",
+        "## Step 6: 相关性检查\n\n",
         f"**最高 Rerank 分数**: `{top_score:.4f}`\n\n",
         f"**阈值**: `{config.RELEVANCE_THRESHOLD}`\n\n",
-        f"**判定**: {'✅ 通过 — 分数 >= 阈值' if passed else '⚠️ 低于阈值 — 触发降级策略'}\n\n",
+        f"**判定**: {'✅ 通过' if passed else '⚠️ 低于阈值 — 触发降级'}\n\n",
     ]
+    result["step6_relevance"] = "".join(relevance_lines)
 
     if not passed:
-        relevance_lines.append(
-            "**降级策略**:\n"
-            "1. 扩大检索范围 (top_k × 2)\n"
-            "2. 若仍不足且分数 > 0.01 → 低置信度回答 (加'仅供参考'提示)\n"
-            "3. 若分数极低 → 返回'建议联系客服'\n\n"
+        result["step7_prompt"] = "## Step 7: LLM Prompt\n\n⏭️ 跳过 (降级)"
+        result["step8_answer"] = "## Step 8: 答案生成\n\n⏭️ 跳过"
+        result["step9_selfcheck"] = "## Step 9: 自检\n\n⏭️ 跳过"
+        total_ms = (time.time() - t0) * 1000
+        result["final_answer"] = (
+            f"## 最终回答\n\n⏱️ 总耗时: {total_ms:.0f}ms\n\n"
+            "抱歉，没有找到相关信息。建议联系售后: support@sporramom.com"
         )
-        # 扩大检索
-        expanded = _retriever.retrieve(
-            query,
-            bm25_top_k=config.BM25_TOP_K * 2,
-            vector_top_k=config.VECTOR_TOP_K * 2,
-            rerank_top_n=config.RERANK_TOP_N,
-        )
-        if expanded and expanded[0].rerank_score >= config.RELEVANCE_THRESHOLD * 0.8:
-            relevance_lines.append(f"**扩大检索后最高分**: {expanded[0].rerank_score:.4f} ✅ 使用扩大后的结果\n")
-            reranked = [(r.chunk.chunk_id, r.rerank_score) for r in expanded]
-        elif expanded and expanded[0].rerank_score > 0.01:
-            relevance_lines.append(f"**扩大检索后最高分**: {expanded[0].rerank_score:.4f} → 低置信度回答\n")
-        else:
-            relevance_lines.append(f"**扩大检索后最高分**: {expanded[0].rerank_score if expanded else 0:.4f} → 无法回答\n")
+        return result
 
-    result["step6_relevance"] = "".join(relevance_lines)
+    # ========== Step 8: LLM 生成 ==========
+    context = _format_context([
+        type('R', (), {'chunk': _retriever.chunks[idx], 'rerank_score': score})()
+        for idx, score in reranked
+    ])
+    prompt_text = f"基于以下文档回答用户问题。\n\n文档:\n{context}\n\n问题: {query}\n\n回答:"
+
+    result["step7_prompt"] = (
+        f"## Step 7: LLM Prompt\n\n"
+        f"**上下文 chunk 数**: {len(reranked)}\n\n"
+        f"**上下文字符数**: {len(context)}\n\n"
+        f"**Temperature**: {config.LLM_TEMPERATURE}\n"
+    )
+
+    t8 = time.time()
+    llm_resp = _generate_answer(query, context)
+    t9 = time.time()
+
+    result["step8_answer"] = (
+        f"## Step 8: 答案生成\n\n"
+        f"**耗时**: {(t9-t8)*1000:.0f}ms\n\n"
+        f"**输入 Token**: {llm_resp.input_tokens}\n\n"
+        f"**输出 Token**: {llm_resp.output_tokens}\n\n"
+        f"**生成的答案**:\n\n{llm_resp.content}"
+    )
+
+    # ========== Step 9: 自检 ==========
+    t10 = time.time()
+    coverage = _self_check(llm_resp.content, context)
+    t11 = time.time()
+
+    result["step9_selfcheck"] = (
+        f"## Step 9: 自检\n\n"
+        f"**耗时**: {(t11-t10)*1000:.0f}ms\n\n"
+        f"**关键词覆盖率**: `{coverage:.1%}`\n\n"
+        f"**阈值**: `{config.SELF_CHECK_MIN_COVERAGE:.1%}`\n\n"
+        f"**判定**: {'✅ 通过' if coverage >= config.SELF_CHECK_MIN_COVERAGE else '⚠️ 覆盖率偏低'}\n"
+    )
+
+    # ========== 最终回答 ==========
+    total_ms = (time.time() - t0) * 1000
+    result["final_answer"] = f"## 最终回答\n\n⏱️ 总耗时: {total_ms:.0f}ms\n\n{llm_resp.content}"
+
+    return result
 
     # ========== Step 7: 构建 Prompt ==========
     # 用 reranked 结果构建上下文

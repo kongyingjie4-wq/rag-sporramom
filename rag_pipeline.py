@@ -206,11 +206,12 @@ def run_rag(
     完整 RAG 流程。
 
     流程:
-    1. 意图判断 → 闲聊/超范围直接回复
-    2. 混合检索 → BM25 + 向量 + RRF + Rerank
-    3. 相关性检查 → 低于阈值触发降级
-    4. 答案生成 → LLM 基于检索结果生成
-    5. 自检 → 覆盖率低则重试
+    1. 意图判断 → 闲聊直接回复
+    2. BM25+向量 快速预筛 → 和产品无关则直接拒绝（省掉 Rerank 7.5 秒）
+    3. 混合检索 → RRF + Rerank
+    4. 相关性检查 → 低于阈值触发降级
+    5. 答案生成 → LLM 基于检索结果生成
+    6. 自检 → 覆盖率低则重试
     """
     relevance_threshold = relevance_threshold or config.RELEVANCE_THRESHOLD
 
@@ -222,7 +223,29 @@ def run_rag(
     if intent == "out_of_scope":
         return _handle_out_of_scope(query)
 
-    # Step 2: 混合检索
+    # Step 2: BM25+向量 快速预筛（~11ms）
+    bm25_top_k_val = bm25_top_k or config.BM25_TOP_K
+    vector_top_k_val = vector_top_k or config.VECTOR_TOP_K
+
+    bm25_results = retriever.bm25_index.search(query, bm25_top_k_val)
+    vector_results = retriever.vector_index.search(query, vector_top_k_val)
+
+    # 检查 BM25 和向量是否都找不到相关内容
+    bm25_has_results = len(bm25_results) > 0 and bm25_results[0][1] > 0
+    vector_has_results = len(vector_results) > 0 and vector_results[0][1] > 0.3
+
+    if not bm25_has_results and not vector_has_results:
+        # BM25 和向量都没找到相关内容 → 和产品无关，跳过 Rerank
+        return RAGResponse(
+            answer="我是 SporraMom W3 吸奶器的智能客服助手，请问您有关于产品的问题吗？\n\n"
+                   "例如：使用方法、故障排除、产品参数等。",
+            sources=[],
+            retrieval_results=[],
+            intent="product_qa",
+            fallback_triggered=True,
+        )
+
+    # Step 3: 混合检索（RRF + Rerank）
     results = retriever.retrieve(
         query,
         bm25_top_k=bm25_top_k,

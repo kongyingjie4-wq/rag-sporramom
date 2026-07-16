@@ -7,3 +7,7 @@ build/
 .env
 .vscode/
 .claude/
+
+# 隐藏敏感文件
+产品说明书.md
+index_cache/

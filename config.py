@@ -8,9 +8,9 @@ import os
 # ============================================================
 # LLM API 配置
 # ============================================================
-API_BASE_URL = os.getenv("API_BASE_URL", "https://your-api-base-url.com/v1")
-API_KEY = os.getenv("API_KEY", "your-api-key-here")
-LLM_MODEL = os.getenv("LLM_MODEL", "your-model-name")
+API_BASE_URL = os.getenv("API_BASE_URL", "https://token-plan-cn.xiaomimimo.com/v1")
+API_KEY = os.getenv("API_KEY", "tp-cgqr15zhvphd5ino2cuuf437558fg86p5og0eddonp2pno4g")
+LLM_MODEL = os.getenv("LLM_MODEL", "mimo-v2.5-pro")
 
 # ============================================================
 # Embedding 模型配置
